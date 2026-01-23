@@ -1,6 +1,5 @@
 import { useState } from "react";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import "./App.css";
 
 function App() {
   const [input, setInput] = useState("");
@@ -16,75 +15,65 @@ function App() {
     setReply("");
 
     try {
-      const res = await fetch(`${API_URL}/api/ask`, {
+      const res = await fetch("http://localhost:3001/api/ask", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: input,
+        }),
       });
 
+      if (!res.ok) {
+        throw new Error("Server error");
+      }
+
       const data = await res.json();
-      setReply(data.reply);
-    } catch {
-      setError("Cannot connect to server");
+
+      // 👈 بک‌اند answer برمی‌گرداند
+      setReply(data.answer || "No response received.");
+    } catch (err) {
+      setError("❌ Cannot connect to AI server");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      background: "#f4f7fb",
-      fontFamily: "system-ui"
-    }}>
-      <div style={{
-        width: 420,
-        background: "#fff",
-        padding: 24,
-        borderRadius: 16,
-        boxShadow: "0 20px 40px rgba(0,0,0,0.08)"
-      }}>
-        <h2>oneauto</h2>
-        <p>Your AI shopping assistant</p>
+    <div className="app-wrapper">
+      <div className="app-card">
+        <h1 className="app-title">oneauto</h1>
+        <p className="app-subtitle">
+          Your AI shopping assistant
+        </p>
 
         <input
+          className="app-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="What do you want to buy?"
-          style={{ width: "100%", padding: 12, marginTop: 12 }}
+          placeholder="What are you planning to buy?"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") askAI();
+          }}
         />
 
         <button
+          className="app-button"
           onClick={askAI}
           disabled={loading}
-          style={{
-            width: "100%",
-            padding: 12,
-            marginTop: 12,
-            background: "#5b5bf7",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8
-          }}
         >
-          {loading ? "Thinking..." : "Ask"}
+          {loading ? "Thinking..." : "Ask AI"}
         </button>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && (
+          <p className="app-error">{error}</p>
+        )}
 
         {reply && (
-          <pre style={{
-            whiteSpace: "pre-wrap",
-            marginTop: 16,
-            background: "#f1f5ff",
-            padding: 12,
-            borderRadius: 8
-          }}>
+          <div className="app-reply">
             {reply}
-          </pre>
+          </div>
         )}
       </div>
     </div>
@@ -92,4 +81,3 @@ function App() {
 }
 
 export default App;
-
